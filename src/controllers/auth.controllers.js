@@ -1,11 +1,69 @@
-import { body } from "express-validator";
 import { asyncHandler } from "../utils/async-handler.js";
-import { userRegistrationValidator } from "../validators/index.js";
-import {User} from "../models/user.models.js"
-import { ApiErrors } from "../utils/api-errors.js";
+import {success, z} from "zod"
+import {User, generateTemporaryToken} from "../models/user.models.js"
+import bcrypt from "bcryptjs";
+import { emailVerificationMailgenContent, sendMail } from "../utils/mail.js";
+
 
 const registerUser = asyncHandler(async (req, res) => {
-  const {}
+  const registerSchema = z.object({
+    username: z.string(),
+    email: z.string().email().min(3).max(20),
+    fullname: z.string(),
+    password: z.string().min(3).max(20),
+    // avatar : z.string()
+  });
+
+  const parseData = registerSchema.safeParse(req.body);
+
+  if (!parseData.success) {
+    return res.status(400).json({
+      success: false,
+      message: 'invalid data',
+      errors: parseData.error,
+    });
+  }
+
+  const { username, email, fullname, password, avatar } = parseData.data;
+
+  const isExistingUser = await User.findOne({
+    email: email,
+  });
+
+  if (isExistingUser) {
+    return res.status(403).json({
+      success: false,
+      message: 'user already exists',
+    });
+  }
+
+  const hashPassword = await bcrypt.hash(password, 5);
+
+  const newUser = await User.create({
+    username: username,
+    fullname: fullname,
+    email: email,
+    password: hashPassword,
+    avatar: avatar,
+  });
+
+  const verfiyUrl = generateTemporaryToken();
+
+  const content = emailVerificationMailgenContent(username, verfiyUrl);
+
+  const emailSent = await sendMail(content);
+
+  if (!emailSent) {
+    return res.status(400).json({
+      success: false,
+      message: 'error while sending verification email',
+    });
+  }
+
+  return res.status(200).json({
+    success : true,
+    message : "verification email sent"
+  })
 });
 
 

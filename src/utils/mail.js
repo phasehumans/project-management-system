@@ -5,8 +5,8 @@ const sendMail= async (options) => {
     const mailGenerator= new Mailgen({
         theme: 'default',
         product: {
-            name: 'DevBoard',
-            link: 'https://devboard.js'
+            name: 'Project Managment System',
+            link: 'https://pms.com'
         }
     })
 
@@ -21,8 +21,8 @@ const sendMail= async (options) => {
         port: process.env.MAILTRAP_PORT,
         secure: false, // true for 465, false for other ports
         auth: {
-            user: MAILTRAP_USERNAME,
-            pass: MAILTRAP_PASSWORD,
+            user: process.env.MAILTRAP_USERNAME,
+            pass: process.env.MAILTRAP_PASSWORD,
         },
     });
 
