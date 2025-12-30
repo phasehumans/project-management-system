@@ -1,10 +1,17 @@
-import { Router } from "express";
-import {userRegistrationValidator} from "../validators"
-import { validate } from "../middlewares/validator.middleware";
-import { registerUser } from "../controllers/auth.controllers";
+import { Router } from "express"
+import { forgotPassword, generateKey, getMe, loginUser, logoutUser, registerUser, resetPassword, verifyUser } from "../controllers/auth.controllers"
 
-const router= Router()
+const authRouter = Router()
 
-router.route("/register").post(userRegistrationValidator(), validate, registerUser)
+authRouter.post('/register', registerUser)
+authRouter.post('/verify', verifyUser)
+authRouter.post('/login', loginUser)
+authRouter.post('/logout', logoutUser)
+authRouter.get('/profile', getMe)
 
-export default router
+authRouter.get('/forgot-password', forgotPassword)
+authRouter.post('/reset-password', resetPassword)
+
+authRouter.get('/getkey', generateKey)
+
+export default authRouter
